@@ -1,25 +1,39 @@
-import { useState } from 'react'
-import { questions } from './questions'
+import { useEffect, useState } from 'react'
 import './App.css'
 
 export default function App() {
+  const [questions, setQuestions] = useState([])
   const [index, setIndex] = useState(0)
   const [score, setScore] = useState(0)
   const [selected, setSelected] = useState(null)
+  const [correctAnswer, setCorrectAnswer] = useState(null)
   const [finished, setFinished] = useState(false)
 
+  useEffect(() => {
+    fetch('/api/questions').then((r) => r.json()).then(setQuestions)
+  }, [])
+
+  if (!questions.length) return <p>Chargement…</p>
   const question = questions[index]
 
-  const choose = (i) => {
+  const choose = async (i) => {
     if (selected !== null) return
     setSelected(i)
-    if (i === question.answer) setScore((s) => s + 1)
+    const res = await fetch('/api/answer', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: question.id, choice: i }),
+    })
+    const data = await res.json()
+    setCorrectAnswer(data.answer)
+    if (data.correct) setScore((s) => s + 1)
   }
 
   const next = () => {
     if (index + 1 < questions.length) {
       setIndex(index + 1)
       setSelected(null)
+      setCorrectAnswer(null)
     } else {
       setFinished(true)
     }
@@ -29,6 +43,7 @@ export default function App() {
     setIndex(0)
     setScore(0)
     setSelected(null)
+    setCorrectAnswer(null)
     setFinished(false)
   }
 
@@ -49,8 +64,8 @@ export default function App() {
       <ul>
         {question.options.map((opt, i) => {
           let cls = ''
-          if (selected !== null) {
-            if (i === question.answer) cls = 'correct'
+          if (correctAnswer !== null) {
+            if (i === correctAnswer) cls = 'correct'
             else if (i === selected) cls = 'wrong'
           }
           return (
@@ -60,7 +75,7 @@ export default function App() {
           )
         })}
       </ul>
-      {selected !== null && (
+      {correctAnswer !== null && (
         <button className="next" onClick={next}>
           {index + 1 < questions.length ? 'Suivant' : 'Voir le résultat'}
         </button>

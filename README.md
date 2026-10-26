@@ -1,16 +1,56 @@
-# React + Vite
+# Quiz B3
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Quiz React (client Vite) + API Node Express (server).
 
-Currently, two official plugins are available:
+```
+client/   front React
+server/   API Express (port 3001)
+```
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Installation (après un clone)
 
-## React Compiler
+```bash
+git clone <url-du-repo>
+cd Quiz_B3_AACW
+npm run install:all
+npm run dev
+```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Client : http://localhost:5173 — API : http://localhost:3001
 
-## Expanding the Oxlint configuration
+## Lancer séparément
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+```bash
+npm run dev --prefix server
+npm run dev --prefix client
+```
+
+## Mettre à jour le repo (push)
+
+```bash
+git status
+git add .
+git commit -m "Description des changements"
+git pull --rebase origin main
+git push origin main
+```
+
+## Récupérer les mises à jour des autres
+
+```bash
+git pull origin main
+npm run install:all
+```
+
+## Travailler sur une branche
+
+```bash
+git checkout -b ma-branche
+git add .
+git commit -m "message"
+git push -u origin ma-branche
+```
+
+## Prérequis
+
+Node 20.19+ ou 22.12+ (`node -v`).

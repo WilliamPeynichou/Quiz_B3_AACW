@@ -1,23 +1,25 @@
 {
-  "name": "quiz-b3-aacw",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
+  "name": "quiz-b3-aacw-root",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "lint": "oxlint",
-    "preview": "vite preview"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "install:all": "npm install && npm install --prefix client && npm install --prefix server",
+    "dev": "concurrently \"npm run dev --prefix server\" \"npm run dev --prefix client\""
   },
-  "dependencies": {
-    "react": "^19.3.1",
-    "react-dom": "^19.3.1"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/WilliamPeynichou/Quiz_B3_AACW.git"
   },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/WilliamPeynichou/Quiz_B3_AACW/issues"
+  },
+  "homepage": "https://github.com/WilliamPeynichou/Quiz_B3_AACW#readme",
   "devDependencies": {
-    "@types/react": "^19.3.0",
-    "@types/react-dom": "^19.3.0",
-    "@vitejs/plugin-react": "^6.1.2",
-    "oxlint": "^1.88.0",
-    "vite": "^8.3.4"
+    "concurrently": "^10.0.6"
   }
 }
