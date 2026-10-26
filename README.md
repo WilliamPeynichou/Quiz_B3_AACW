@@ -35,13 +35,13 @@ La base SQLite est créée et remplie automatiquement au premier démarrage du s
 
 | Commande (à la racine) | Rôle |
 | ---------------------- | ---- |
-| `npm run install:all` | installe les dépendances (racine, client, serveur) |
-| `npm run dev` | lance le serveur et le client ensemble |
-| `npm run dev --prefix server` | lance seulement l'API (avec nodemon) |
-| `npm run dev --prefix client` | lance seulement le client |
-| `npm run build --prefix client` | build de production du client |
-| `npm run lint --prefix client` | lint du client (oxlint) |
-| `npm run db:reset --prefix server` | supprime la BDD (recréée au prochain démarrage) |
+| `pnpm run install:all` | installe les dépendances (racine, client, serveur) |
+| `pnpm run dev` | lance le serveur et le client ensemble |
+| `pnpm run dev --prefix server` | lance seulement l'API (avec nodemon) |
+| `pnpm run dev --prefix client` | lance seulement le client |
+| `pnpm run build --prefix client` | build de production du client |
+| `pnpm run lint --prefix client` | lint du client (oxlint) |
+| `pnpm run db:reset --prefix server` | supprime la BDD (recréée au prochain démarrage) |
 
 ## API
 
@@ -58,6 +58,54 @@ La bonne réponse n'est jamais envoyée avant que le joueur ait répondu : la v�
 - Table `questions` : `id`, `question`, `options` (tableau JSON), `answer` (index de la bonne option).
 - Au démarrage : migration (`CREATE TABLE IF NOT EXISTS`) puis seed si la table est vide.
 - Emplacement modifiable avec la variable `DB_PATH` dans `server/.env`.
+
+### Requête SQL de mise en place
+
+Schéma complet (contrat défini dans `feature.md`), à exécuter une fois pour créer la base :
+
+```sql
+PRAGMA foreign_keys = ON;
+
+CREATE TABLE IF NOT EXISTS users (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  username      TEXT    NOT NULL UNIQUE,
+  email         TEXT    NOT NULL UNIQUE,
+  password_hash TEXT    NOT NULL,
+  created_at    TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS categories (
+  id   INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT    NOT NULL UNIQUE
+);
+
+CREATE TABLE IF NOT EXISTS questions (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  question    TEXT    NOT NULL,
+  options     TEXT    NOT NULL, -- tableau JSON
+  answer      INTEGER NOT NULL, -- index de la bonne option
+  category_id INTEGER NOT NULL REFERENCES categories(id),
+  difficulty  TEXT    NOT NULL CHECK (difficulty IN ('facile', 'moyen', 'difficile'))
+);
+
+CREATE TABLE IF NOT EXISTS results (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id       INTEGER NOT NULL REFERENCES users(id),
+  category_id   INTEGER NOT NULL REFERENCES categories(id),
+  difficulty    TEXT    NOT NULL CHECK (difficulty IN ('facile', 'moyen', 'difficile')),
+  score         INTEGER NOT NULL,
+  correct_count INTEGER NOT NULL,
+  total         INTEGER NOT NULL,
+  duration_ms   INTEGER NOT NULL,
+  played_at     TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_questions_cat_diff ON questions(category_id, difficulty);
+CREATE INDEX IF NOT EXISTS idx_results_ranking    ON results(category_id, difficulty, score DESC);
+CREATE INDEX IF NOT EXISTS idx_results_user       ON results(user_id);
+```
+
+Pour l'exécuter à la main : copier ce SQL dans un fichier `schema.sql`, puis `sqlite3 server/data/quiz.db < schema.sql`. Dans le projet, ce SQL va dans `migrate.js` (étape 0.1 du socle).
 
 ### Ajouter des questions
 
