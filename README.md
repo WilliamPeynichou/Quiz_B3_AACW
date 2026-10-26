@@ -103,6 +103,12 @@ CREATE TABLE IF NOT EXISTS results (
 CREATE INDEX IF NOT EXISTS idx_questions_cat_diff ON questions(category_id, difficulty);
 CREATE INDEX IF NOT EXISTS idx_results_ranking    ON results(category_id, difficulty, score DESC);
 CREATE INDEX IF NOT EXISTS idx_results_user       ON results(user_id);
+
+DROP TABLE IF EXISTS results;
+DROP TABLE IF EXISTS questions;
+DROP TABLE IF EXISTS categories;
+DROP TABLE IF EXISTS users;
+
 ```
 
 Pour l'exécuter à la main : copier ce SQL dans un fichier `schema.sql`, puis `sqlite3 server/data/quiz.db < schema.sql`. Dans le projet, ce SQL va dans `migrate.js` (étape 0.1 du socle).
