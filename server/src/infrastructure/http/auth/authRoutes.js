@@ -5,6 +5,7 @@ import { RegisterUser } from '../../../application/auth/RegisterUser.js'
 import { LoginUser } from '../../../application/auth/LoginUser.js'
 import { SqliteUserRepository } from '../../auth/SqliteUserRepository.js'
 import { ensureJwtSecret, issueToken } from '../../auth/issueToken.js'
+import { requireAuth } from '../middlewares/requireAuth.js'
 
 // Monté sur /api/auth par le socle : aucune modification de app.js.
 export const authRoutes = () => {
@@ -29,6 +30,10 @@ export const authRoutes = () => {
   router.post('/login', async (req, res) => {
     ensureJwtSecret()
     res.json(await loginUser.execute(req.body))
+  })
+
+  router.get('/me', requireAuth, (req, res) => {
+    res.json(req.user)
   })
 
   return router
