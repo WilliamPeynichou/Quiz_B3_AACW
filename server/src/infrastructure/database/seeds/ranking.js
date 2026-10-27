@@ -1,3 +1,6 @@
+// Bouchon 4.1 : faux users + results pour coder ranking sans attendre game.
+// À retirer une fois la feature game mergée.
+
 const FAKE_USERS = [
   { id: 1, username: 'demo', email: 'demo@quiz.local' },
   { id: 2, username: 'alice', email: 'alice@quiz.local' },
@@ -10,8 +13,35 @@ const FAKE_USERS = [
 ]
 
 const STUB_CATEGORIES = ['Histoire', 'Sciences', 'Sport']
-
 const FAKE_PASSWORD_HASH = 'not-a-real-hash'
+
+function fakeResults(cat) {
+  return [
+    // Histoire / facile : plus de 10 scores → top 10 testable (4.2)
+    { userId: 2, categoryId: cat(0), difficulty: 'facile', score: 90, correct: 9, total: 10, durationMs: 45000, playedAt: '2026-10-20 10:00:00' },
+    { userId: 3, categoryId: cat(0), difficulty: 'facile', score: 80, correct: 8, total: 10, durationMs: 52000, playedAt: '2026-10-20 11:00:00' },
+    { userId: 1, categoryId: cat(0), difficulty: 'facile', score: 70, correct: 7, total: 10, durationMs: 61000, playedAt: '2026-10-21 09:15:00' },
+    { userId: 4, categoryId: cat(0), difficulty: 'facile', score: 60, correct: 6, total: 10, durationMs: 70000, playedAt: '2026-10-21 14:00:00' },
+    { userId: 5, categoryId: cat(0), difficulty: 'facile', score: 50, correct: 5, total: 10, durationMs: 80000, playedAt: '2026-10-22 08:00:00' },
+    { userId: 6, categoryId: cat(0), difficulty: 'facile', score: 40, correct: 4, total: 10, durationMs: 88000, playedAt: '2026-10-22 18:30:00' },
+    { userId: 7, categoryId: cat(0), difficulty: 'facile', score: 30, correct: 3, total: 10, durationMs: 95000, playedAt: '2026-10-23 12:00:00' },
+    { userId: 8, categoryId: cat(0), difficulty: 'facile', score: 20, correct: 2, total: 10, durationMs: 110000, playedAt: '2026-10-23 16:45:00' },
+    { userId: 2, categoryId: cat(0), difficulty: 'facile', score: 85, correct: 8, total: 10, durationMs: 48000, playedAt: '2026-10-24 10:00:00' },
+    { userId: 3, categoryId: cat(0), difficulty: 'facile', score: 75, correct: 7, total: 10, durationMs: 55000, playedAt: '2026-10-24 11:20:00' },
+    { userId: 4, categoryId: cat(0), difficulty: 'facile', score: 55, correct: 5, total: 10, durationMs: 72000, playedAt: '2026-10-25 09:00:00' },
+
+    { userId: 2, categoryId: cat(0), difficulty: 'moyen', score: 160, correct: 8, total: 10, durationMs: 40000, playedAt: '2026-10-20 15:00:00' },
+    { userId: 1, categoryId: cat(0), difficulty: 'moyen', score: 140, correct: 7, total: 10, durationMs: 58000, playedAt: '2026-10-21 15:00:00' },
+    { userId: 5, categoryId: cat(0), difficulty: 'moyen', score: 120, correct: 6, total: 10, durationMs: 65000, playedAt: '2026-10-22 15:00:00' },
+
+    { userId: 3, categoryId: cat(1), difficulty: 'difficile', score: 210, correct: 7, total: 10, durationMs: 35000, playedAt: '2026-10-21 18:00:00' },
+    { userId: 1, categoryId: cat(1), difficulty: 'difficile', score: 180, correct: 6, total: 10, durationMs: 42000, playedAt: '2026-10-22 18:00:00' },
+    { userId: 6, categoryId: cat(1), difficulty: 'difficile', score: 90, correct: 3, total: 10, durationMs: 50000, playedAt: '2026-10-23 18:00:00' },
+
+    { userId: 1, categoryId: cat(2), difficulty: 'facile', score: 50, correct: 5, total: 10, durationMs: 64000, playedAt: '2026-10-25 20:00:00' },
+    { userId: 7, categoryId: cat(2), difficulty: 'moyen', score: 100, correct: 5, total: 10, durationMs: 60000, playedAt: '2026-10-26 10:00:00' },
+  ]
+}
 
 export function seedRanking(db) {
   const { count } = db.prepare('SELECT COUNT(*) AS count FROM results').get()
@@ -19,13 +49,18 @@ export function seedRanking(db) {
 
   const insertUser = db.prepare(`
     INSERT OR IGNORE INTO users (id, username, email, password_hash)
-    VALUES (?, ?, ?, ?)
+    VALUES (@id, @username, @email, @password_hash)
   `)
   const insertCategory = db.prepare('INSERT OR IGNORE INTO categories (name) VALUES (?)')
+  const insertResult = db.prepare(`
+    INSERT INTO results (
+      user_id, category_id, difficulty, score, correct_count, total, duration_ms, played_at
+    ) VALUES (@userId, @categoryId, @difficulty, @score, @correct, @total, @durationMs, @playedAt)
+  `)
 
   db.transaction(() => {
     for (const user of FAKE_USERS) {
-      insertUser.run(user.id, user.username, user.email, FAKE_PASSWORD_HASH)
+      insertUser.run({ ...user, password_hash: FAKE_PASSWORD_HASH })
     }
 
     const existingCategories = db.prepare('SELECT id FROM categories').all()
@@ -37,38 +72,7 @@ export function seedRanking(db) {
     if (categories.length === 0) return
 
     const cat = (index) => categories[index % categories.length].id
-    const insertResult = db.prepare(`
-      INSERT INTO results (
-        user_id, category_id, difficulty, score, correct_count, total, duration_ms, played_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `)
-
-    const rows = [
-      [2, cat(0), 'facile', 90, 9, 10, 45000, '2026-10-20 10:00:00'],
-      [3, cat(0), 'facile', 80, 8, 10, 52000, '2026-10-20 11:00:00'],
-      [1, cat(0), 'facile', 70, 7, 10, 61000, '2026-10-21 09:15:00'],
-      [4, cat(0), 'facile', 60, 6, 10, 70000, '2026-10-21 14:00:00'],
-      [5, cat(0), 'facile', 50, 5, 10, 80000, '2026-10-22 08:00:00'],
-      [6, cat(0), 'facile', 40, 4, 10, 88000, '2026-10-22 18:30:00'],
-      [7, cat(0), 'facile', 30, 3, 10, 95000, '2026-10-23 12:00:00'],
-      [8, cat(0), 'facile', 20, 2, 10, 110000, '2026-10-23 16:45:00'],
-      [2, cat(0), 'facile', 85, 8, 10, 48000, '2026-10-24 10:00:00'],
-      [3, cat(0), 'facile', 75, 7, 10, 55000, '2026-10-24 11:20:00'],
-      [4, cat(0), 'facile', 55, 5, 10, 72000, '2026-10-25 09:00:00'],
-
-      [2, cat(0), 'moyen', 160, 8, 10, 40000, '2026-10-20 15:00:00'],
-      [1, cat(0), 'moyen', 140, 7, 10, 58000, '2026-10-21 15:00:00'],
-      [5, cat(0), 'moyen', 120, 6, 10, 65000, '2026-10-22 15:00:00'],
-
-      [3, cat(1), 'difficile', 210, 7, 10, 35000, '2026-10-21 18:00:00'],
-      [1, cat(1), 'difficile', 180, 6, 10, 42000, '2026-10-22 18:00:00'],
-      [6, cat(1), 'difficile', 90, 3, 10, 50000, '2026-10-23 18:00:00'],
-
-      [1, cat(2), 'facile', 50, 5, 10, 64000, '2026-10-25 20:00:00'],
-      [7, cat(2), 'moyen', 100, 5, 10, 60000, '2026-10-26 10:00:00'],
-    ]
-
-    for (const row of rows) insertResult.run(...row)
+    for (const row of fakeResults(cat)) insertResult.run(row)
   })()
 
   const { count: inserted } = db.prepare('SELECT COUNT(*) AS count FROM results').get()
