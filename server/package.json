@@ -7,17 +7,20 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon src/index.js",
     "start": "node src/index.js",
-    "db:reset": "node -e \"require('fs').rmSync('data',{recursive:true,force:true})\""
+    "db:reset": "node -e \"require('fs').rmSync('data',{recursive:true,force:true})\"",
+    "test:auth": "node --test tests/unit/auth/*.test.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "module",
   "dependencies": {
+    "bcryptjs": "^3.0.3",
     "better-sqlite3": "^13.0.3",
     "cors": "^2.8.6",
     "dotenv": "^18.0.9",
-    "express": "^5.3.0"
+    "express": "^5.3.0",
+    "quiz-b3-aacw-root": "file:.."
   },
   "devDependencies": {
     "nodemon": "^3.1.14"
