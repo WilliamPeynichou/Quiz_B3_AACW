@@ -1,5 +1,6 @@
 import { test, before, after } from 'node:test'
 import assert from 'node:assert/strict'
+import { DIFFICULTIES } from '../../../src/constants/difficulties.js'
 
 // Base SQLite en mémoire : n'abîme pas la base locale data/quiz.db
 process.env.DB_PATH = ':memory:'
@@ -41,7 +42,7 @@ test('la BDD contient les 4 tables du contrat', () => {
 test('le seed range les questions dans une catégorie avec une difficulté', async () => {
   const row = db.prepare('SELECT category_id, difficulty FROM questions LIMIT 1').get()
   assert.ok(row.category_id)
-  assert.equal(row.difficulty, 'facile')
+  assert.ok(DIFFICULTIES.includes(row.difficulty))
 
   // L'API existante du quiz fonctionne toujours
   const res = await fetch(`${baseUrl}/questions`)
