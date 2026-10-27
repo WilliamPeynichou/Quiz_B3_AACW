@@ -1,40 +1,40 @@
-﻿# Authentification — feature 1.1
+# Authentification (features 1.1 à 1.4)
 
-Première livraison : inscription (`POST /api/auth/register`).
+## Endpoints
+- `POST /api/auth/register` : `{ username, email, password }` => `201 { token, user }`
+- `POST /api/auth/login` : `{ email, password }` => `200 { token, user }`
+- `GET /api/auth/me` : en-tête `Authorization: Bearer <token>` => `{ id, username }`
 
-- Valide `username` (3–30 caractères), `email` et `password` (8 caractères min., 72 octets max.).
-- Normalise le nom d'utilisateur et l'email en minuscules.
-- Refuse les doublons avec le statut HTTP `409`.
-- Stocke uniquement `password_hash`, calculé avec bcryptjs (coût 12).
-- Renvoie `201` et le contrat `{ token, user }` du socle. Le JWT HS256 expire après 24 h.
+Mots de passe hashés via bcryptjs (12 rounds), JWT HS256, durée 24 h. Requêtes préparées SQLite.
 
-## Configuration locale
+## Configuration du secret local
+Le fichier `server/.env` est suivi dans ce dépôt : **n'y mets jamais ton secret**.
+Utilise plutôt `server/.env.auth.local` (ignoré par `*.local` du `.gitignore` racine) :
 
-Définir une variable `JWT_SECRET` de 32 octets minimum avant de lancer l'API.
-Ne jamais versionner un secret dans Git.
-
-Exemple PowerShell pour une session de développement :
-
-```powershell
-$env:JWT_SECRET = node -e "console.log(require('node:crypto').randomBytes(48).toString('hex'))"
-npm install --prefix server
-npm run dev
+```text
+JWT_SECRET=<secret aléatoire d'au moins 32 octets>
 ```
 
-Test manuel dans un autre PowerShell :
+La commande d'installation fournie crée ce fichier si nécessaire.
+Ne committe jamais de clé ni de mot de passe en clair.
+
+## Tests
 
 ```powershell
-$body = @{ username = 'cedric'; email = 'cedric@example.com'; password = 'mot-de-passe-test-123' } | ConvertTo-Json
-Invoke-RestMethod http://localhost:3001/api/auth/register -Method Post -ContentType 'application/json' -Body $body
+npm run test:auth --prefix server
 ```
 
-Tests unitaires (pas besoin de base SQLite) :
-`npm run test:auth --prefix server`
+## Frontend
+`AuthProvider` entoure les routes dans `App.jsx`, et `useAuth()` expose
+`user`, `isAuthenticated`, `loading`, `login()` et `logout()`.
+Le jeton est conservé en `sessionStorage` (jusqu'à fermeture de l'onglet), et
+`httpClient` l'envoie automatiquement à l'API. L'écran `/login` permet
+la connexion, l'inscription et la déconnexion.
 
-## Prochaines sous-features
+**Travail en équipe** : seul `client/src/app/App.jsx` appartient au socle partagé.
+Cette modification y ajoute exclusivement l'`AuthProvider`; faire valider
+l'intégration aux collègues avant une PR vers `p-auth`.
 
-- 1.2 : connexion et récupération du compte courant
-- 1.3 : vérification des JWT dans requireAuth
-- 1.4 : écrans React et AuthContext
-
-Aucun fichier des fonctionnalités catalog, game ou ranking n'a été modifié.
+**Pour une mise en production** : préférer des cookies HttpOnly Secure SameSite,
+un anti-CSRF adapté et un rate-limit sur login/register. Le stockage JS
+(sessionStorage) reste accessible en cas de XSS ; il est ici destiné au TP.
