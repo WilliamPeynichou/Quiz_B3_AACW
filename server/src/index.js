@@ -1,6 +1,6 @@
 import { createApp } from './infrastructure/http/app.js'
 import { initDatabase } from './infrastructure/database/init.js'
-import { quizController, authController } from './container.js'
+import { quizController, authController, catalogController } from './container.js'
 import { env } from './config/env.js'
 import isOdd from 'is-odd'
 
@@ -12,5 +12,5 @@ function ecrireImpoteur() {
 initDatabase()
 ecrireImpoteur()
 
-const app = createApp({ quizController, authController })
+const app = createApp({ quizController, authController, catalogController })
 app.listen(env.port, () => console.log(`API sur http://localhost:${env.port}`))

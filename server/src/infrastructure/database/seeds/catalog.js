@@ -1,26 +1,31 @@
-import { questions } from '../../data/questions.js'
+import { catalog } from '../../catalog/catalogData.js'
 
-// Catégorie des questions de départ (la feature catalog 2.1 ajoutera les autres)
-const DEFAULT_CATEGORY = 'React'
-const DEFAULT_DIFFICULTY = 'facile'
-
+// Insère catégories + questions. Une catégorie qui a déjà des questions est ignorée,
+// on peut donc relancer le seed à chaque démarrage sans créer de doublons.
 export function seedCatalog(db) {
-  const { count } = db.prepare('SELECT COUNT(*) AS count FROM questions').get()
-  if (count > 0) return
+  const insertCategory = db.prepare('INSERT OR IGNORE INTO categories (name) VALUES (?)')
+  const findCategory = db.prepare('SELECT id FROM categories WHERE name = ?')
+  const countQuestions = db.prepare('SELECT COUNT(*) AS count FROM questions WHERE category_id = ?')
+  const insertQuestion = db.prepare(
+    `INSERT INTO questions (question, options, answer, category_id, difficulty)
+     VALUES (?, ?, ?, ?, ?)`,
+  )
 
+  let inserted = 0
   db.transaction(() => {
-    db.prepare('INSERT OR IGNORE INTO categories (name) VALUES (?)').run(DEFAULT_CATEGORY)
-    const { id: categoryId } = db
-      .prepare('SELECT id FROM categories WHERE name = ?')
-      .get(DEFAULT_CATEGORY)
+    for (const { name, questions } of catalog) {
+      insertCategory.run(name)
+      const { id: categoryId } = findCategory.get(name)
+      if (countQuestions.get(categoryId).count > 0) continue
 
-    const insert = db.prepare(
-      `INSERT INTO questions (question, options, answer, category_id, difficulty)
-       VALUES (?, ?, ?, ?, ?)`,
-    )
-    for (const q of questions) {
-      insert.run(q.question, JSON.stringify(q.options), q.answer, categoryId, q.difficulty ?? DEFAULT_DIFFICULTY)
+      for (const [difficulty, list] of Object.entries(questions)) {
+        for (const q of list) {
+          insertQuestion.run(q.question, JSON.stringify(q.options), q.answer, categoryId, difficulty)
+          inserted++
+        }
+      }
     }
   })()
-  console.log(`Seed : ${questions.length} questions insérées`)
+
+  if (inserted > 0) console.log(`Seed catalog : ${inserted} questions insérées`)
 }
