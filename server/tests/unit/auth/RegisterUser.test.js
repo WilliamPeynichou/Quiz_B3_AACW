@@ -21,10 +21,11 @@ class InMemoryUserRepository extends UserRepository {
 }
 
 const fakeHasher = { hash: async (p) => `hashed:${p}` }
+const fakeTokens = { sign: ({ id }) => `token-${id}` }
 
 const setup = () => {
   const userRepository = new InMemoryUserRepository()
-  const registerUser = new RegisterUser({ userRepository, passwordHasher: fakeHasher })
+  const registerUser = new RegisterUser({ userRepository, passwordHasher: fakeHasher, tokenService: fakeTokens })
   return { userRepository, registerUser }
 }
 
@@ -34,7 +35,7 @@ test('inscrit un utilisateur et ne renvoie que les infos publiques', async () =>
   const { registerUser, userRepository } = setup()
   const result = await registerUser.execute(valid)
 
-  assert.deepEqual(result, { user: { id: 1, username: 'william' } })
+  assert.deepEqual(result, { token: 'token-1', user: { id: 1, username: 'william' } })
   assert.equal(userRepository.users[0].email, 'william@mail.com') // normalisé
   assert.equal(userRepository.users[0].passwordHash, 'hashed:motdepasse') // jamais en clair
 })

@@ -22,6 +22,11 @@ export class SqliteUserRepository extends UserRepository {
     return row ? toEntity(row) : null
   }
 
+  async findById(id) {
+    const row = this.db.prepare('SELECT * FROM users WHERE id = ?').get(id)
+    return row ? toEntity(row) : null
+  }
+
   async findByUsername(username) {
     const row = this.db
       .prepare('SELECT * FROM users WHERE username = ? COLLATE NOCASE')
