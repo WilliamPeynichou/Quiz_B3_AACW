@@ -17,3 +17,12 @@ export class ConflictError extends Error {
     this.details = details
   }
 }
+
+// Identifiants ou token invalides → 401
+export class UnauthorizedError extends Error {
+  constructor(message = 'Non authentifié') {
+    super(message)
+    this.name = 'UnauthorizedError'
+    this.status = 401
+  }
+}

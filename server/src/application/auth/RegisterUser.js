@@ -2,9 +2,10 @@ import { validateRegistration } from '../../domain/auth/validateRegistration.js'
 import { ConflictError } from '../../domain/auth/errors.js'
 
 export class RegisterUser {
-  constructor({ userRepository, passwordHasher }) {
+  constructor({ userRepository, passwordHasher, tokenService }) {
     this.userRepository = userRepository
     this.passwordHasher = passwordHasher
+    this.tokenService = tokenService
   }
 
   async execute(input) {
@@ -20,7 +21,7 @@ export class RegisterUser {
     const passwordHash = await this.passwordHasher.hash(password)
     const user = await this.userRepository.create({ username, email, passwordHash })
 
-    // Contrat : { token, user }. Le token JWT arrive avec la feature 1.2 (connexion).
-    return { user: user.toPublic() }
+    const publicUser = user.toPublic()
+    return { token: this.tokenService.sign(publicUser), user: publicUser }
   }
 }

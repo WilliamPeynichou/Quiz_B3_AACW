@@ -54,7 +54,8 @@ test('POST /api/auth/register → 201 et mot de passe hashé en base', async () 
   assert.equal(res.status, 201)
 
   const body = await res.json()
-  assert.deepEqual(body, { user: { id: body.user.id, username: 'william' } })
+  assert.deepEqual(body.user, { id: body.user.id, username: 'william' })
+  assert.equal(typeof body.token, 'string')
 
   const row = db.prepare('SELECT password_hash FROM users WHERE email = ?').get('william@mail.com')
   assert.notEqual(row.password_hash, 'motdepasse')
