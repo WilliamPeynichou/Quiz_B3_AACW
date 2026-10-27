@@ -1,3 +1,4 @@
-export function AuthPage() {
-  return <main><h1>Connexion</h1></main>
-}
+import { AuthForm } from './AuthForm'
+
+export const LoginPage = () => <AuthForm mode="login" />
+export const RegisterPage = () => <AuthForm mode="register" />
