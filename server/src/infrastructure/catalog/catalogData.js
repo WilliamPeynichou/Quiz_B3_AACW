@@ -78,7 +78,7 @@ export const catalog = [
         { question: 'Dans quel film entend-on « Here’s looking at you, kid » ?', options: ['Casablanca', 'Autant en emporte le vent', 'Citizen Kane', 'Vertigo'], answer: 0 },
       ],
     },
-  },
+    },
   {
     name: 'Voyage',
     questions: {
