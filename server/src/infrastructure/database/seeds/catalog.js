@@ -1,7 +1,7 @@
 import { questions } from '../../data/questions.js'
 
-// Catégorie des questions de départ (la feature catalog 2.1 ajoutera les autres)
-const DEFAULT_CATEGORY = 'React'
+// Catégorie des questions de départ : renommée pour coller à l'écran de choix
+const DEFAULT_CATEGORY = 'Frontend'
 const DEFAULT_DIFFICULTY = 'facile'
 
 export function seedCatalog(db) {
