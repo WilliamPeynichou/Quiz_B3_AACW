@@ -1,4 +1,8 @@
 import { Router } from 'express'
 
-// Monté sur /api/catalog (routes ajoutées par la feature catalog)
-export const catalogRoutes = () => Router()
+// Monté sur /api/catalog
+export const catalogRoutes = (controller) => {
+  const router = Router()
+  router.get('/categories', controller.categories)
+  return router
+}
