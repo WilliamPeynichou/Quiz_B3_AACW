@@ -4,5 +4,6 @@ import { Router } from 'express'
 export const catalogRoutes = (controller) => {
   const router = Router()
   router.get('/categories', controller.categories)
+  router.get('/questions', controller.questions)
   return router
 }
