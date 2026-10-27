@@ -14,6 +14,7 @@ import { env } from './config/env.js'
 import { AuthController } from './infrastructure/http/auth/AuthController.js'
 import { SqliteCatalogRepository } from './infrastructure/catalog/SqliteCatalogRepository.js'
 import { GetCategories } from './application/catalog/GetCategories.js'
+import { GetCatalogQuestions } from './application/catalog/GetCatalogQuestions.js'
 import { CatalogController } from './infrastructure/http/catalog/CatalogController.js'
 
 const questionRepository = new SqliteQuestionRepository(db)
@@ -35,4 +36,5 @@ export const authController = new AuthController({
 
 export const catalogController = new CatalogController({
   getCategories: new GetCategories(catalogRepository),
+  getCatalogQuestions: new GetCatalogQuestions(catalogRepository),
 })
