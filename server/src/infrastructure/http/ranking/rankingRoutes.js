@@ -28,4 +28,3 @@ rankingRoutes.get('/best-score', (req, res) => {
     const bestScore = RankingRepository.findBestScore({ categoryId: category, difficulty: difficulty })
     res.json(bestScore)
 })
-
